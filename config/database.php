@@ -1,7 +1,7 @@
 <?php
 /**
  * Database Configuration & Connection Setup
- * Supports Localhost XAMPP & Vercel Environment Variables
+ * Supports Localhost XAMPP MySQL, Remote MySQL Env Vars, & SQLite Fallback
  * Travel Memories Website
  */
 
@@ -29,57 +29,70 @@ function getDBConnection() {
         return $pdo;
     }
 
-    try {
-        $dsn = "mysql:host=" . DB_HOST . ";port=" . DB_PORT . ";charset=" . DB_CHARSET;
-        $options = [
-            PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-            PDO::ATTR_EMULATE_PREPARES   => false,
-        ];
+    $isVercel = isset($_ENV['VERCEL']) || isset($_SERVER['VERCEL']) || strpos($_SERVER['HTTP_HOST'] ?? '', 'vercel.app') !== false;
 
-        // On Vercel, if DB_NAME is specified, connect directly to that DB
-        if (getenv('DB_NAME')) {
+    // 1. If remote MySQL env var DB_HOST is explicitly set on Vercel
+    if ($isVercel && getenv('DB_HOST')) {
+        try {
             $dsn = "mysql:host=" . DB_HOST . ";port=" . DB_PORT . ";dbname=" . DB_NAME . ";charset=" . DB_CHARSET;
+            $options = [
+                PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                PDO::ATTR_EMULATE_PREPARES   => false,
+            ];
             $pdo = new PDO($dsn, DB_USER, DB_PASS, $options);
             return $pdo;
+        } catch (PDOException $e) {
+            // Fallthrough to SQLite fallback
         }
-
-        // Localhost auto database & schema creation
-        $pdo = new PDO($dsn, DB_USER, DB_PASS, $options);
-        $pdo->exec("CREATE DATABASE IF NOT EXISTS `" . DB_NAME . "` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
-        $pdo->exec("USE `" . DB_NAME . "`");
-
-        // Check if tables exist
-        $checkTable = $pdo->query("SHOW TABLES LIKE 'trips'");
-        if ($checkTable->rowCount() === 0) {
-            $sqlFile = __DIR__ . '/../database/travel_memories.sql';
-            if (file_exists($sqlFile)) {
-                $sqlContent = file_get_contents($sqlFile);
-                $pdo->exec($sqlContent);
-            }
-        }
-
-        return $pdo;
-    } catch (PDOException $e) {
-        // Friendly Vercel setup advice if database connection fails
-        $isVercel = isset($_ENV['VERCEL']) || isset($_SERVER['VERCEL']) || strpos($_SERVER['HTTP_HOST'] ?? '', 'vercel.app') !== false;
-        
-        if ($isVercel) {
-            die("<div style='font-family: system-ui, sans-serif; padding: 40px; background: #000; color: #fff; text-align: center; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center;'>
-                <h1 style='color: #d4af37;'>Vercel Deployment Connected!</h1>
-                <p style='max-width: 600px; color: #ccc; line-height: 1.6;'>PHP Runtime is running properly on Vercel. To connect your MySQL database on Vercel, please set your Environment Variables (DB_HOST, DB_NAME, DB_USER, DB_PASS) in Vercel Project Settings.</p>
-                <div style='background: #111; padding: 15px 25px; border-radius: 8px; border: 1px solid #333; margin-top: 20px; font-family: monospace; color: #00ff66;'>
-                    DB_HOST, DB_NAME, DB_USER, DB_PASS
-                </div>
-            </div>");
-        }
-
-        die("<div style='font-family: sans-serif; padding: 30px; background: #fff5f5; color: #900; border: 1px solid #fcc; margin: 50px auto; max-width: 600px; border-radius: 8px;'>
-            <h2>Database Connection Error</h2>
-            <p>Could not connect to the MySQL database. Please verify your XAMPP MySQL service is running.</p>
-            <p><small>Details: " . htmlspecialchars($e->getMessage()) . "</small></p>
-        </div>");
     }
+
+    // 2. Localhost XAMPP MySQL connection
+    if (!$isVercel) {
+        try {
+            $dsn = "mysql:host=" . DB_HOST . ";port=" . DB_PORT . ";charset=" . DB_CHARSET;
+            $options = [
+                PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                PDO::ATTR_EMULATE_PREPARES   => false,
+            ];
+
+            $pdo = new PDO($dsn, DB_USER, DB_PASS, $options);
+            $pdo->exec("CREATE DATABASE IF NOT EXISTS `" . DB_NAME . "` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
+            $pdo->exec("USE `" . DB_NAME . "`");
+
+            $checkTable = $pdo->query("SHOW TABLES LIKE 'trips'");
+            if ($checkTable->rowCount() === 0) {
+                $sqlFile = __DIR__ . '/../database/travel_memories.sql';
+                if (file_exists($sqlFile)) {
+                    $sqlContent = file_get_contents($sqlFile);
+                    $pdo->exec($sqlContent);
+                }
+            }
+
+            return $pdo;
+        } catch (PDOException $e) {
+            // Fallthrough to SQLite
+        }
+    }
+
+    // 3. Fallback to embedded SQLite database (Works out-of-the-box on Vercel!)
+    $sqliteFile = __DIR__ . '/../database/travel_memories.sqlite';
+    if (file_exists($sqliteFile)) {
+        try {
+            $pdo = new PDO('sqlite:' . $sqliteFile);
+            $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
+            return $pdo;
+        } catch (PDOException $e) {
+            // Ignore & show error
+        }
+    }
+
+    die("<div style='font-family: sans-serif; padding: 30px; background: #fff5f5; color: #900; border: 1px solid #fcc; margin: 50px auto; max-width: 600px; border-radius: 8px;'>
+        <h2>Database Connection Error</h2>
+        <p>Could not connect to MySQL database or SQLite fallback.</p>
+    </div>");
 }
 
 // Global PDO instance
