@@ -62,7 +62,7 @@ foreach ($trips as $trip):
             <p class="card-description"><?= e($trip['description']); ?></p>
             <div class="mt-auto d-flex align-items-center justify-content-between pt-3 border-top">
                 <span class="small text-muted"><i class="far fa-calendar-alt me-1"></i> <?= $dateDisplay; ?> &bull; <?= $duration; ?></span>
-                <a href="/travel-memories/trip.php?slug=<?= e($trip['slug']); ?>" class="btn btn-sm btn-outline-custom">
+                <a href="<?= BASE_URL; ?>/trip.php?slug=<?= e($trip['slug']); ?>" class="btn btn-sm btn-outline-custom">
                     View Memories <i class="fas fa-arrow-right ms-1"></i>
                 </a>
             </div>

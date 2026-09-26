@@ -40,14 +40,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function fetchTripsAJAX(year, district) {
         tripsGrid.style.opacity = '0.4';
-        const url = `/travel-memories/api/filter-trips.php?year=${encodeURIComponent(year)}&district=${encodeURIComponent(district)}`;
+        const basePath = window.location.pathname.startsWith('/travel-memories') ? '/travel-memories' : '';
+        const url = `${basePath}/api/filter-trips.php?year=${encodeURIComponent(year)}&district=${encodeURIComponent(district)}`;
 
         fetch(url)
             .then(res => res.text())
             .then(html => {
                 tripsGrid.innerHTML = html;
                 tripsGrid.style.opacity = '1';
-                // Re-bind image lazy loading or animations if needed
             })
             .catch(err => {
                 console.error('Error filtering trips:', err);
