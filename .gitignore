@@ -1,0 +1,13 @@
+# Ignore downloaded uploaded files to keep repo small
+/uploads/trips/original/*
+/uploads/trips/medium/*
+/uploads/trips/thumb/*
+
+!/uploads/trips/original/.gitkeep
+!/uploads/trips/medium/.gitkeep
+!/uploads/trips/thumb/.gitkeep
+
+# System & IDE files
+.DS_Store
+Thumbs.db
+*.log

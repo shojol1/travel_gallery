@@ -1,0 +1,19 @@
+# Travel Memories Apache Configuration
+# Prevent Directory Browsing
+Options -Indexes
+
+# Security Headers
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-XSS-Protection "1; mode=block"
+    Header set X-Frame-Options "SAMEORIGIN"
+</IfModule>
+
+# URL Rewriting (Clean URLs for trips if enabled)
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /travel-memories/
+
+    # Direct trip slug routing e.g. /travel-memories/trip/coxs-bazar-coastal-expedition/
+    RewriteRule ^trip/([a-zA-Z0-9-]+)/?$ trip.php?slug=$1 [L,QSA]
+</IfModule>
