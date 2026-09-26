@@ -1,28 +1,22 @@
 {
   "version": 2,
   "functions": {
-    "*.php": {
-      "runtime": "vercel-php@0.7.1"
-    },
-    "admin/*.php": {
-      "runtime": "vercel-php@0.7.1"
-    },
-    "api/*.php": {
+    "api/index.php": {
       "runtime": "vercel-php@0.7.1"
     }
   },
   "routes": [
     {
-      "src": "/trip/([^/]+)/?",
-      "dest": "/trip.php?slug=$1"
+      "src": "/assets/(.*)",
+      "dest": "/assets/$1"
     },
     {
-      "src": "/admin/?",
-      "dest": "/admin/index.php"
+      "src": "/uploads/(.*)",
+      "dest": "/uploads/$1"
     },
     {
       "src": "/(.*)",
-      "dest": "/$1"
+      "dest": "/api/index.php"
     }
   ]
 }
