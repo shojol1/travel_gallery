@@ -6,7 +6,7 @@ require_once __DIR__ . '/includes/header.php';
 $stats = get_trip_stats();
 
 // Fetch distinct years and districts for AJAX Filter bar
-$stmtYears = $pdo->query("SELECT DISTINCT YEAR(start_date) as y FROM trips WHERE published = 1 ORDER BY y DESC");
+$stmtYears = $pdo->query("SELECT DISTINCT substr(start_date, 1, 4) as y FROM trips WHERE published = 1 ORDER BY y DESC");
 $filterYears = $stmtYears->fetchAll(PDO::FETCH_COLUMN);
 
 $stmtDistricts = $pdo->query("SELECT DISTINCT district FROM trips WHERE published = 1 ORDER BY district ASC");

@@ -15,7 +15,7 @@ $where = "WHERE published = 1";
 $params = [];
 
 if (!empty($year)) {
-    $where .= " AND YEAR(start_date) = ?";
+    $where .= " AND substr(start_date, 1, 4) = ?";
     $params[] = $year;
 }
 if (!empty($district)) {

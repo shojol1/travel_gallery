@@ -4,7 +4,7 @@ require_once __DIR__ . '/includes/admin_header.php';
 $stats = get_trip_stats();
 
 // Fetch total years
-$stmtYears = $pdo->query("SELECT COUNT(DISTINCT YEAR(start_date)) FROM trips");
+$stmtYears = $pdo->query("SELECT COUNT(DISTINCT substr(start_date, 1, 4)) FROM trips");
 $totalYears = (int) $stmtYears->fetchColumn();
 
 // Fetch recent trips

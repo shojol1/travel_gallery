@@ -17,7 +17,7 @@ $sql = "SELECT t.*,
 $params = [];
 
 if (!empty($year)) {
-    $sql .= " AND YEAR(t.start_date) = ?";
+    $sql .= " AND substr(t.start_date, 1, 4) = ?";
     $params[] = $year;
 }
 

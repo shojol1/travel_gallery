@@ -83,9 +83,26 @@ function getDBConnection() {
             $pdo = new PDO('sqlite:' . $sqliteFile);
             $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
+
+            // Register custom MySQL-compatible functions in SQLite
+            if (method_exists($pdo, 'sqliteCreateFunction')) {
+                @$pdo->sqliteCreateFunction('YEAR', function($dateStr) {
+                    if (empty($dateStr)) return null;
+                    return date('Y', strtotime($dateStr));
+                }, 1);
+
+                @$pdo->sqliteCreateFunction('CURDATE', function() {
+                    return date('Y-m-d');
+                }, 0);
+
+                @$pdo->sqliteCreateFunction('NOW', function() {
+                    return date('Y-m-d H:i:s');
+                }, 0);
+            }
+
             return $pdo;
         } catch (PDOException $e) {
-            // Ignore & show error
+            // Ignore
         }
     }
 

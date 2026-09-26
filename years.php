@@ -4,7 +4,7 @@ $pageDesc  = "Browse travel journeys grouped by year.";
 require_once __DIR__ . '/includes/header.php';
 
 // Group trips by Year
-$stmt = $pdo->query("SELECT YEAR(start_date) as yr, COUNT(*) as trip_count, MAX(cover_image) as sample_cover 
+$stmt = $pdo->query("SELECT substr(start_date, 1, 4) as yr, COUNT(*) as trip_count, MAX(cover_image) as sample_cover 
                     FROM trips 
                     WHERE published = 1 
                     GROUP BY yr 

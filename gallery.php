@@ -15,7 +15,7 @@ $where = "WHERE t.published = 1";
 $params = [];
 
 if (!empty($year)) {
-    $where .= " AND YEAR(t.start_date) = ?";
+    $where .= " AND substr(t.start_date, 1, 4) = ?";
     $params[] = $year;
 }
 if (!empty($district)) {
@@ -41,7 +41,7 @@ $stmt->execute($params);
 $photos = $stmt->fetchAll();
 
 // Fetch filter lists
-$stmtYears = $pdo->query("SELECT DISTINCT YEAR(start_date) as y FROM trips WHERE published = 1 ORDER BY y DESC");
+$stmtYears = $pdo->query("SELECT DISTINCT substr(start_date, 1, 4) as y FROM trips WHERE published = 1 ORDER BY y DESC");
 $filterYears = $stmtYears->fetchAll(PDO::FETCH_COLUMN);
 ?>
 

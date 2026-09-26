@@ -16,7 +16,7 @@ if (!empty($query)) {
                 t.division LIKE ? OR 
                 t.country LIKE ? OR 
                 t.description LIKE ? OR 
-                YEAR(t.start_date) LIKE ?
+                substr(t.start_date, 1, 4) LIKE ?
             )
             ORDER BY t.start_date DESC";
     $stmt = $pdo->prepare($sql);
